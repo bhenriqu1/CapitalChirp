@@ -97,7 +97,7 @@ async function getTickerPosts(ticker: string) {
         displayName: user.displayName || undefined,
         username: user.username || undefined,
         avatarUrl: user.avatarUrl || undefined,
-        reputationScore: user.reputationScore || undefined,
+        reputationScore: user.reputationScore ? parseFloat(user.reputationScore) : undefined,
       },
       tags: tagsMap.get(post.id) || [],
       reactions: reactionMap.get(post.id),

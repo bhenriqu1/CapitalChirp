@@ -65,7 +65,7 @@ async function getPost(id: string) {
       displayName: user.displayName || undefined,
       username: user.username || undefined,
       avatarUrl: user.avatarUrl || undefined,
-      reputationScore: user.reputationScore || undefined,
+      reputationScore: user.reputationScore ? parseFloat(user.reputationScore) : undefined,
     },
     tags: tags.map((t) => ({ type: t.tagType, value: t.tagValue })),
     reactions: reactionsObj,

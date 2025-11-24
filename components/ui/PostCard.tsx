@@ -85,8 +85,8 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
               <span className="font-semibold text-gray-900">
                 {post.user.displayName || post.user.username || "Anonymous"}
               </span>
-              {post.user.reputationScore && (
-                <ReputationBadge score={parseFloat(post.user.reputationScore)} />
+              {post.user.reputationScore !== undefined && (
+                <ReputationBadge score={post.user.reputationScore} />
               )}
             </div>
             <span className="text-sm text-gray-500">
