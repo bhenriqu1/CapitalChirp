@@ -4,13 +4,15 @@ import { db } from "../db";
 import { posts, users, reactions, postTags, feedRankings } from "../db/schema";
 import { eq, desc, sql, inArray } from "drizzle-orm";
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY environment variable is not set");
+// Lazy initialization of OpenAI client to avoid errors during build
+function getOpenAIClient(): OpenAI | null {
+  if (!process.env.OPENAI_API_KEY) {
+    return null;
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 }
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 interface PostWithMetadata {
   postId: string;
@@ -151,21 +153,23 @@ export async function rankFeedForUser(userId: string, limit: number = 50): Promi
 - Community sentiment (bullish reactions)
 - Time sensitivity (urgent opportunities)
 
-Return JSON array with top ${limit} posts:
-[
-  {
-    "postId": "post_id",
-    "rankScore": 0.85,
-    "explanation": "Why this post is relevant",
-    "factors": {
-      "qualityScore": 0.8,
-      "freshness": 0.9,
-      "userReputation": 75,
-      "communitySentiment": 0.85,
-      "marketRelevance": 0.7
+Return JSON object with "items" array containing top ${limit} posts:
+{
+  "items": [
+    {
+      "postId": "post_id",
+      "rankScore": 0.85,
+      "explanation": "Why this post is relevant",
+      "factors": {
+        "qualityScore": 0.8,
+        "freshness": 0.9,
+        "userReputation": 75,
+        "communitySentiment": 0.85,
+        "marketRelevance": 0.7
+      }
     }
-  }
-]
+  ]
+}
 
 Posts to rank:
 ${JSON.stringify(
@@ -183,23 +187,27 @@ ${JSON.stringify(
   2
 )}`;
 
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a feed ranking AI. Return valid JSON array.",
-        },
-        {
-          role: "user",
-          content: rankingPrompt,
-        },
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 1000,
-      temperature: 0.3,
-    });
+  // Use LLM ranking if API key is available, otherwise fall back to algorithmic
+  const openai = getOpenAIClient();
+  
+  if (openai) {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a feed ranking AI. Return valid JSON object with 'items' array.",
+          },
+          {
+            role: "user",
+            content: rankingPrompt,
+          },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 1000,
+        temperature: 0.3,
+      });
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
@@ -207,7 +215,7 @@ ${JSON.stringify(
     }
 
     const parsed = JSON.parse(content);
-    const rankedItems: FeedItem[] = Array.isArray(parsed) ? parsed : parsed.items || [];
+    const rankedItems: FeedItem[] = parsed.items || (Array.isArray(parsed) ? parsed : []);
 
     // Fallback to algorithmic ranking if LLM fails
     if (rankedItems.length === 0) {
@@ -237,34 +245,37 @@ ${JSON.stringify(
         .slice(0, limit);
     }
 
-    return rankedItems.slice(0, limit);
-  } catch (error) {
-    console.error("Error ranking feed:", error);
-    // Fallback to algorithmic ranking
-    return postsWithFreshness
-      .map((post) => {
-        const rankScore =
-          post.qualityScore * 0.3 +
-          post.freshness * 0.2 +
-          (post.userReputation / 100) * 0.2 +
-          post.communitySentiment * 0.15 +
-          post.timeSensitivityScore * 0.15;
-
-        return {
-          postId: post.postId,
-          rankScore,
-          explanation: `Ranked by quality and engagement`,
-          factors: {
-            qualityScore: post.qualityScore,
-            freshness: post.freshness,
-            userReputation: post.userReputation,
-            communitySentiment: post.communitySentiment,
-            marketRelevance: post.tickerRelevanceScore,
-          },
-        };
-      })
-      .sort((a, b) => b.rankScore - a.rankScore)
-      .slice(0, limit);
+      return rankedItems.slice(0, limit);
+    } catch (error) {
+      console.error("Error ranking feed with LLM:", error);
+      // Fall back to algorithmic ranking
+    }
   }
+  
+  // Fallback to algorithmic ranking (used when API key is missing or LLM fails)
+  return postsWithFreshness
+    .map((post) => {
+      const rankScore =
+        post.qualityScore * 0.3 +
+        post.freshness * 0.2 +
+        (post.userReputation / 100) * 0.2 +
+        post.communitySentiment * 0.15 +
+        post.timeSensitivityScore * 0.15;
+
+      return {
+        postId: post.postId,
+        rankScore,
+        explanation: `Ranked by quality and engagement`,
+        factors: {
+          qualityScore: post.qualityScore,
+          freshness: post.freshness,
+          userReputation: post.userReputation,
+          communitySentiment: post.communitySentiment,
+          marketRelevance: post.tickerRelevanceScore,
+        },
+      };
+    })
+    .sort((a, b) => b.rankScore - a.rankScore)
+    .slice(0, limit);
 }
 

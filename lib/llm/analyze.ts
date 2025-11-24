@@ -1,13 +1,15 @@
 import OpenAI from "openai";
 import { LLMPostAnalysis } from "../models/types";
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY environment variable is not set");
+// Lazy initialization of OpenAI client to avoid errors during build
+function getOpenAIClient(): OpenAI | null {
+  if (!process.env.OPENAI_API_KEY) {
+    return null;
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 }
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 const ANALYSIS_PROMPT = `You are an expert financial analyst AI. Analyze the following investment post and extract structured insights.
 
@@ -49,6 +51,22 @@ ${content}
 
 ${ticker ? `Ticker: ${ticker}` : ""}
 ${analysisType ? `Analysis Type: ${analysisType}` : ""}`;
+
+  const openai = getOpenAIClient();
+  
+  if (!openai) {
+    // Return default analysis if API key is not available
+    console.warn("OPENAI_API_KEY not set, using default analysis");
+    return {
+      tags: [],
+      sentiment: "neutral",
+      summary: "Analysis unavailable - API key not configured",
+      qualityScore: 0.5,
+      timeSensitivityScore: 0.5,
+      tickerRelevanceScore: ticker ? 0.8 : 0.3,
+      extractedTickers: ticker ? [ticker.toUpperCase()] : [],
+    };
+  }
 
   try {
     const response = await openai.chat.completions.create({
