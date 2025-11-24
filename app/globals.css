@@ -24,3 +24,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Ensure all form inputs have dark text */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  color: #111827 !important; /* text-gray-900 - black text */
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important; /* text-gray-500 - dark grey placeholder */
+}
+
+select {
+  color: #111827 !important; /* text-gray-900 - black text */
+}
+
+select option {
+  color: #111827 !important; /* text-gray-900 - black text for options */
+  background-color: #ffffff !important;
+}
+
+/* Style placeholder option (empty value) with dark grey */
+select option[value=""] {
+  color: #6b7280 !important; /* text-gray-500 - dark grey for placeholder */
+}

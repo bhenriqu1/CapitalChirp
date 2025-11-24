@@ -5,6 +5,7 @@ import { syncUser } from "@/lib/actions/users";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
+import { TOP_STOCKS } from "@/lib/market/top-stocks";
 
 async function createPostAction(formData: FormData) {
   "use server";
@@ -66,14 +67,18 @@ export default async function CreatePostPage() {
               <label htmlFor="ticker" className="block text-sm font-medium text-gray-700 mb-2">
                 Ticker Symbol (Optional)
               </label>
-              <input
-                type="text"
+              <select
                 id="ticker"
                 name="ticker"
-                placeholder="AAPL, TSLA, etc."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                maxLength={10}
-              />
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+              >
+                <option value="">Select a ticker...</option>
+                {TOP_STOCKS.map((ticker) => (
+                  <option key={ticker} value={ticker} className="text-gray-900">
+                    {ticker}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -83,14 +88,14 @@ export default async function CreatePostPage() {
               <select
                 id="analysisType"
                 name="analysisType"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                 defaultValue="fundamental"
               >
-                <option value="technical">Technical Analysis</option>
-                <option value="fundamental">Fundamental Analysis</option>
-                <option value="macro">Macro Economic</option>
-                <option value="catalyst">Catalyst/Event</option>
-                <option value="risk_warning">Risk Warning</option>
+                <option value="technical" className="text-gray-900">Technical Analysis</option>
+                <option value="fundamental" className="text-gray-900">Fundamental Analysis</option>
+                <option value="macro" className="text-gray-900">Macro Economic</option>
+                <option value="catalyst" className="text-gray-900">Catalyst/Event</option>
+                <option value="risk_warning" className="text-gray-900">Risk Warning</option>
               </select>
             </div>
 
@@ -106,7 +111,7 @@ export default async function CreatePostPage() {
                 minLength={10}
                 maxLength={5000}
                 placeholder="Share your analysis, insights, or observations. Be specific and evidence-based..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-900 placeholder:text-gray-500 bg-white"
               />
               <p className="mt-2 text-sm text-gray-500">Minimum 10 characters, maximum 5000 characters</p>
             </div>
