@@ -83,17 +83,44 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  // Sync user with Clerk
-  await syncUser();
+  // Sync user with Clerk (don't block on error)
+  try {
+    await syncUser();
+  } catch (error) {
+    console.error("Failed to sync user:", error);
+    // Continue anyway - user can still use the app
+  }
 
-  const data = await getDashboardData(userId);
+  let data;
+  let marketDataMap = new Map();
+  
+  try {
+    data = await getDashboardData(userId);
 
-  // Fetch market data for trending tickers
-  const marketDataPromises = data.trendingTickers.map((t) => getMarketData(t.ticker));
-  const marketDataResults = await Promise.all(marketDataPromises);
-  const marketDataMap = new Map(
-    data.trendingTickers.map((t, i) => [t.ticker, marketDataResults[i]])
-  );
+    // Fetch market data for trending tickers (with error handling)
+    const marketDataPromises = data.trendingTickers.map(async (t) => {
+      try {
+        return await getMarketData(t.ticker);
+      } catch (error) {
+        console.error(`Failed to fetch market data for ${t.ticker}:`, error);
+        return null;
+      }
+    });
+    const marketDataResults = await Promise.all(marketDataPromises);
+    marketDataMap = new Map(
+      data.trendingTickers.map((t, i) => [t.ticker, marketDataResults[i]]).filter(([_, data]) => data !== null)
+    );
+  } catch (error) {
+    console.error("Failed to load dashboard data:", error);
+    // Return empty data structure to prevent crash
+    data = {
+      user: null,
+      trendingTickers: [],
+      topPosts: [],
+      leaderboard: [],
+      userPostCount: 0,
+    };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,11 +128,11 @@ export default async function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-6">
-              <Link href="/feed" className="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700">
+              <Link href="/feed" className="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700 cursor-pointer" prefetch={true}>
                 <img src="/icon.png" alt="CapitalChirp" className="w-8 h-8 object-contain" />
                 <span>CapitalChirp</span>
               </Link>
-              <Link href="/feed" className="text-gray-700 hover:text-blue-600 font-medium">
+              <Link href="/feed" className="text-gray-700 hover:text-blue-600 font-medium" prefetch={true}>
                 Feed
               </Link>
               <Link href="/stocks" className="text-gray-700 hover:text-blue-600 font-medium">

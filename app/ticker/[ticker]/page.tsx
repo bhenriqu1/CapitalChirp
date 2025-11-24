@@ -129,7 +129,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-6">
-              <Link href="/feed" className="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700">
+              <Link href="/feed" className="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700 cursor-pointer">
                 <img src="/icon.png" alt="CapitalChirp" className="w-8 h-8 object-contain" />
                 <span>CapitalChirp</span>
               </Link>

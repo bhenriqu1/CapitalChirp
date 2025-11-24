@@ -21,7 +21,7 @@ export default async function CreatePostPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-6">
-              <Link href="/feed" className="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700">
+              <Link href="/feed" className="flex items-center gap-2 text-xl font-bold text-blue-600 hover:text-blue-700 cursor-pointer">
                 <Image src="/icon.png" alt="CapitalChirp" width={32} height={32} className="object-contain" />
                 <span>CapitalChirp</span>
               </Link>
