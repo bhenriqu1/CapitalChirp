@@ -4,16 +4,20 @@ import { syncUser } from "@/lib/actions/users";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
-import { CreatePostForm } from "./CreatePostForm";
+import { CreateSelfInvestmentForm } from "./CreateSelfInvestmentForm";
 
-export default async function CreatePostPage() {
+export default async function CreateSelfInvestmentPage() {
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");
   }
 
   // Sync user with Clerk
-  await syncUser();
+  try {
+    await syncUser();
+  } catch (error) {
+    console.error("Failed to sync user:", error);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,10 +41,10 @@ export default async function CreatePostPage() {
               <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium">
                 Dashboard
               </Link>
-              <Link href="/self-investment" className="text-gray-700 hover:text-blue-600 font-medium">
+              <Link href="/self-investment" className="text-blue-600 font-medium">
                 Self Investment
               </Link>
-              <Link href="/post/create" className="text-blue-600 font-medium">
+              <Link href="/post/create" className="text-gray-700 hover:text-blue-600 font-medium">
                 New Post
               </Link>
             </div>
@@ -51,13 +55,14 @@ export default async function CreatePostPage() {
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Post</h1>
-          <p className="text-gray-600">Share your investment insights with the community</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Add Self Investment</h1>
+          <p className="text-gray-600">Track your investment in yourself - courses, certifications, books, tools, and more</p>
         </div>
 
-        <CreatePostForm />
+        <CreateSelfInvestmentForm />
       </main>
     </div>
   );
 }
+
 

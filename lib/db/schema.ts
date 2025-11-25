@@ -104,12 +104,33 @@ export const marketData = pgTable("market_data", {
   lastUpdatedIdx: index("market_last_updated_idx").on(table.lastUpdated),
 }));
 
+// Self Investments table
+export const selfInvestments = pgTable("self_investments", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(), // e.g., "AWS Certification", "Data Science Bootcamp"
+  category: text("category").notNull(), // course, certification, book, tool, coaching, other
+  amountInvested: decimal("amount_invested", { precision: 10, scale: 2 }).notNull(),
+  roi: decimal("roi", { precision: 10, scale: 2 }), // ROI percentage (can be negative)
+  outcome: text("outcome").notNull(), // paid_off, didnt_pay_off, in_progress, too_early
+  description: text("description").notNull(),
+  investmentDate: timestamp("investment_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("self_inv_user_id_idx").on(table.userId),
+  roiIdx: index("self_inv_roi_idx").on(table.roi),
+  outcomeIdx: index("self_inv_outcome_idx").on(table.outcome),
+  createdAtIdx: index("self_inv_created_at_idx").on(table.createdAt),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
   reactions: many(reactions),
   comments: many(comments),
   feedRankings: many(feedRankings),
+  selfInvestments: many(selfInvestments),
 }));
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
@@ -148,6 +169,13 @@ export const commentsRelations = relations(comments, ({ one }) => ({
   }),
   user: one(users, {
     fields: [comments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const selfInvestmentsRelations = relations(selfInvestments, ({ one }) => ({
+  user: one(users, {
+    fields: [selfInvestments.userId],
     references: [users.id],
   }),
 }));

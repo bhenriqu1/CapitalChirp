@@ -73,6 +73,9 @@ export default async function StocksPage() {
               <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium">
                 Dashboard
               </Link>
+              <Link href="/self-investment" className="text-gray-700 hover:text-blue-600 font-medium">
+                Self Investment
+              </Link>
               <Link href="/post/create" className="text-gray-700 hover:text-blue-600 font-medium">
                 New Post
               </Link>
