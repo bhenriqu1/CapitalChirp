@@ -2,6 +2,7 @@
 
 **CapitalChirp** is a social investment platform where users share stock insights and analysis. The platform uses AI to curate personalized feeds, analyze post quality, and provide real-time market data. Users can post investment insights with ticker symbols, react to posts, build reputation, and track trending stocks.
 
+Try out platform here: https://capitalchirp.vercel.app/feed
 ## Description
 
 CapitalChirp combines social networking with investment intelligence. Users create posts about stocks with optional ticker symbols and analysis types (technical, fundamental, macro, catalyst, or risk warnings). The platform uses OpenAI GPT-4o-mini to automatically analyze posts for sentiment, quality, and relevance, then ranks content in personalized feeds with AI-generated explanations. Real-time market data from Finnhub and Alpha Vantage powers a live market tracker showing the top 50 stocks. Users earn reputation scores based on engagement and can react to posts with likes, bullish, bearish, or insightful reactions.
